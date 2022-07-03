@@ -25,9 +25,14 @@ import java.util.List;
 public class DraggableSquareView extends ViewGroup implements DraggableItemView.Listener {
     // ACTION_DOWN按下后超过这个时间，就直接touch拦截，不会调用底层view的onClick事件
     private static final int INTERCEPT_TIME_SLOP = 200;
-    private final int[] allStatus = {DraggableItemView.STATUS_LEFT_TOP, DraggableItemView.STATUS_RIGHT_TOP,
-            DraggableItemView.STATUS_RIGHT_MIDDLE, DraggableItemView.STATUS_RIGHT_BOTTOM,
-            DraggableItemView.STATUS_MIDDLE_BOTTOM, DraggableItemView.STATUS_LEFT_BOTTOM};
+    private final int[] allStatus = {
+            DraggableItemView.STATUS_LEFT_TOP,
+            DraggableItemView.STATUS_RIGHT_TOP,
+            DraggableItemView.STATUS_RIGHT_MIDDLE,
+            DraggableItemView.STATUS_RIGHT_BOTTOM,
+            DraggableItemView.STATUS_MIDDLE_BOTTOM,
+            DraggableItemView.STATUS_LEFT_BOTTOM
+    };
     private Listener listener;
 
     private int mTouchSlop = 5; // 判定为滑动的阈值，单位是像素
@@ -55,10 +60,8 @@ public class DraggableSquareView extends ViewGroup implements DraggableItemView.
 
     public DraggableSquareView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        mDragHelper = ViewDragHelper
-                .create(this, 10f, new DragHelperCallback());
-        moveDetector = new GestureDetectorCompat(context,
-                new MoveDetector());
+        mDragHelper = ViewDragHelper.create(this, 10f, new DragHelperCallback());
+        moveDetector = new GestureDetectorCompat(context, new MoveDetector());
         moveDetector.setIsLongpressEnabled(false); // 不能处理长按事件，否则违背最初设计的初衷
         spaceInterval = (int) getResources().getDimension(R.dimen.drag_square_interval); // 小方块之间的间隔
 
@@ -80,12 +83,10 @@ public class DraggableSquareView extends ViewGroup implements DraggableItemView.
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-
-        int len = allStatus.length;
-        for (int i = 0; i < len; i++) {
+        for (int status : allStatus) {
             // 渲染结束之后，朝viewGroup中添加子View
             DraggableItemView itemView = new DraggableItemView(getContext());
-            itemView.setStatus(allStatus[i]);
+            itemView.setStatus(status);
             itemView.setParentView(this);
             itemView.setListener(this);
             originViewPositionList.add(new Point()); //  原始位置点，由此初始化，一定与子View的status绑定
