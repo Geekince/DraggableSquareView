@@ -1,9 +1,10 @@
 package com.widget.draggablesquareview;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageView;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 
@@ -47,6 +48,24 @@ public class MainActivity extends AppCompatActivity {
                 "http://b.hiphotos.baidu.com/image/pic/item/9d82d158ccbf6c81b94575cfb93eb13533fa40a2.jpg");
 
         Glide.with(this).load("https://i.picsum.photos/id/866/200/300.jpg?hmac=rcadCENKh4rD6MAp6V_ma-AyWv641M4iiOpe1RyFHeI").into((ImageView) findViewById(R.id.cover_iv));
+
+        StepProgressView stepProgressView = findViewById(R.id.progress);
+        stepProgressView.setStepCount(4);
+        stepProgressView.setSpace(30);
+        stepProgressView.setDefaultStep(2);
+
+        findViewById(R.id.previous).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                stepProgressView.setPreviousStep();
+            }
+        });
+        findViewById(R.id.next).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                stepProgressView.setNextStep();
+            }
+        });
     }
 
     public void setImages(String... imageUrls) {
