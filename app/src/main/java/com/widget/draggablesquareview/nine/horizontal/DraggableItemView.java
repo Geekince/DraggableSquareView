@@ -1,4 +1,4 @@
-package com.widget.draggablesquareview;
+package com.widget.draggablesquareview.nine.horizontal;
 
 import android.animation.ObjectAnimator;
 import android.content.Context;
@@ -15,39 +15,42 @@ import com.facebook.rebound.SimpleSpringListener;
 import com.facebook.rebound.Spring;
 import com.facebook.rebound.SpringConfig;
 import com.facebook.rebound.SpringSystem;
+import com.widget.draggablesquareview.R;
 
 /**
- *
+ * Created by xmuSistone on 2016/5/23.
  */
-public class DraggableItemView extends FrameLayout implements ActionClickListener {
+public class DraggableItemView extends FrameLayout {
 
     public static final int STATUS_LEFT_TOP = 0;
     public static final int STATUS_RIGHT_TOP = 1;
-    public static final int STATUS_RIGHT_MIDDLE = 2;
-    public static final int STATUS_RIGHT_BOTTOM = 3;
-    public static final int STATUS_MIDDLE_BOTTOM = 4;
+    public static final int STATUS_RIGHT_TOP_new = 2;
+    public static final int STATUS_RIGHT_MIDDLE = 3;
+    public static final int STATUS_RIGHT_MIDDLE_new = 4;
     public static final int STATUS_LEFT_BOTTOM = 5;
+    public static final int STATUS_MIDDLE_BOTTOM = 6;
+    public static final int STATUS_RIGHT_BOTTOM = 7;
+    public static final int STATUS_RIGHT_BOTTOM_new = 8;
 
     public static final int SCALE_LEVEL_1 = 1; // 最大状态，缩放比例是100%
     public static final int SCALE_LEVEL_2 = 2; // 中间状态，缩放比例scaleRate
     public static final int SCALE_LEVEL_3 = 3; // 最小状态，缩放比例是smallerRate
 
-    private DraggableSquareView parentView;
-    private final View maskView;
-    private final View addView;
-    private final ImageView imageView;
-
+    private ImageView imageView;
+    private View maskView;
+    private int status;
     private float scaleRate = 0.5f;
     private float smallerRate = scaleRate * 0.9f;
     private Spring springX, springY;
     private ObjectAnimator scaleAnimator;
     private boolean hasSetCurrentSpringValue = false;
-    private final SpringConfig springConfigCommon = SpringConfig.fromOrigamiTensionAndFriction(40, 7);
-    private int moveDstX = Integer.MIN_VALUE, moveDstY = Integer.MIN_VALUE;
+    private DraggableSquareView parentView;
+    private SpringConfig springConfigCommon = SpringConfig.fromOrigamiTensionAndFriction(140, 7);
+    private SpringConfig springConfigDragging = SpringConfig.fromOrigamiTensionAndFriction(300, 6);
+    private int anchorX = Integer.MIN_VALUE, anchorY = Integer.MIN_VALUE;
 
     private String imagePath;
-    private Listener listener;
-    private int status;
+    private View addView;
 
     public DraggableItemView(Context context) {
         this(context, null);
@@ -60,10 +63,13 @@ public class DraggableItemView extends FrameLayout implements ActionClickListene
     public DraggableItemView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         inflate(context, R.layout.drag_item, this);
+
         imageView = (ImageView) findViewById(R.id.drag_item_imageview);
         maskView = findViewById(R.id.drag_item_mask_view);
+
         addView = findViewById(R.id.add_view);
 
+        //点击变小处理,不需要这段代码
         getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
@@ -77,43 +83,11 @@ public class DraggableItemView extends FrameLayout implements ActionClickListene
         maskView.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!isDraggable()) {
 
-                } else {
-
-                }
             }
         });
 
         initSpring();
-    }
-
-    @Override
-    public void onTakePhotoClick(View view) {
-        if (listener != null) listener.takePhoto(status, isDraggable());
-    }
-
-    @Override
-    public void onPickImageClick(View view) {
-        if (listener != null) listener.pickImage(status, isDraggable());
-    }
-
-    @Override
-    public void onDeleteClick(View view) {
-        imagePath = null;
-        imageView.setImageBitmap(null);
-        addView.setVisibility(View.VISIBLE);
-        parentView.onDeleteImage(DraggableItemView.this);
-    }
-
-    public void setListener(Listener listener) {
-        this.listener = listener;
-    }
-
-    public interface Listener {
-        void pickImage(int imageStatus, boolean isModify);
-
-        void takePhoto(int imageStatus, boolean isModify);
     }
 
     /**
@@ -180,9 +154,7 @@ public class DraggableItemView extends FrameLayout implements ActionClickListene
 
         this.status = toStatus;
         Point point = parentView.getOriginViewPos(status);
-        this.moveDstX = point.x;
-        this.moveDstY = point.y;
-        animTo(moveDstX, moveDstY);
+        animTo(point.x, point.y);
     }
 
     public void animTo(int xPos, int yPos) {
@@ -206,7 +178,7 @@ public class DraggableItemView extends FrameLayout implements ActionClickListene
         }
 
         scaleAnimator = ObjectAnimator
-                .ofFloat(this, "customScale", imageView.getScaleX(), rate)
+                .ofFloat(this, "custScale", imageView.getScaleX(), rate)
                 .setDuration(200);
         scaleAnimator.setInterpolator(new DecelerateInterpolator());
         scaleAnimator.start();
@@ -214,21 +186,23 @@ public class DraggableItemView extends FrameLayout implements ActionClickListene
 
     public void saveAnchorInfo(int downX, int downY) {
         int halfSide = getMeasuredWidth() / 2;
-        moveDstX = downX - halfSide;
-        moveDstY = downY - halfSide;
+        anchorX = downX - halfSide;
+        anchorY = downY - halfSide;
     }
 
     /**
      * 真正开始动画
      */
     public void startAnchorAnimation() {
-        if (moveDstX == Integer.MIN_VALUE || moveDstX == Integer.MIN_VALUE) {
+        if (anchorX == Integer.MIN_VALUE || anchorY == Integer.MIN_VALUE) {
             return;
         }
 
         springX.setOvershootClampingEnabled(true);
         springY.setOvershootClampingEnabled(true);
-        animTo(moveDstX, moveDstY);
+        springX.setSpringConfig(springConfigDragging);
+        springY.setSpringConfig(springConfigDragging);
+        animTo(anchorX, anchorY);
         scaleSize(DraggableItemView.SCALE_LEVEL_3);
     }
 
@@ -238,16 +212,6 @@ public class DraggableItemView extends FrameLayout implements ActionClickListene
 
     public void setScreenY(int screenY) {
         this.offsetTopAndBottom(screenY - getTop());
-    }
-
-    public int computeDraggingX(int dx) {
-        this.moveDstX += dx;
-        return this.moveDstX;
-    }
-
-    public int computeDraggingY(int dy) {
-        this.moveDstY += dy;
-        return this.moveDstY;
     }
 
     /**
@@ -284,19 +248,20 @@ public class DraggableItemView extends FrameLayout implements ActionClickListene
 
         Point point = parentView.getOriginViewPos(status);
         setCurrentSpringPos(getLeft(), getTop());
-        this.moveDstX = point.x;
-        this.moveDstY = point.y;
-        animTo(moveDstX, moveDstY);
+        animTo(point.x, point.y);
     }
 
     public void fillImageView(String imagePath) {
         this.imagePath = imagePath;
         addView.setVisibility(View.GONE);
+        if (status == STATUS_LEFT_TOP) {
+        } else {
+        }
         Glide.with(getContext()).load(imagePath).into(imageView);
     }
 
-    // 以下两个get、set方法是为自定义的属性动画CustomScale服务，不能删
-    public void setCustomScale(float scale) {
+    // 以下两个get、set方法是为自定义的属性动画CustScale服务，不能删
+    public void setCustScale(float scale) {
         imageView.setScaleX(scale);
         imageView.setScaleY(scale);
 
@@ -304,7 +269,7 @@ public class DraggableItemView extends FrameLayout implements ActionClickListene
         maskView.setScaleY(scale);
     }
 
-    public float getCustomScale() {
+    public float getCustScale() {
         return imageView.getScaleX();
     }
 
@@ -320,9 +285,4 @@ public class DraggableItemView extends FrameLayout implements ActionClickListene
         return imagePath != null;
     }
 
-    public String getImagePath() {
-        return imagePath;
-    }
-
 }
-

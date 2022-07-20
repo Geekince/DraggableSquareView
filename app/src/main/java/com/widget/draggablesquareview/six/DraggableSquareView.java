@@ -1,4 +1,4 @@
-package com.widget.draggablesquareview;
+package com.widget.draggablesquareview.six;
 
 import android.content.Context;
 import android.graphics.Point;
@@ -15,6 +15,8 @@ import android.view.ViewGroup;
 
 import androidx.core.view.GestureDetectorCompat;
 import androidx.customview.widget.ViewDragHelper;
+
+import com.widget.draggablesquareview.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -107,8 +109,9 @@ public class DraggableSquareView extends ViewGroup implements DraggableItemView.
             DraggableItemView itemView = getItemViewByStatus(imageStatus);
             if (itemView != null) {
                 itemView.fillImageView(imagePath);
-                if (imageChangesListener != null)
+                if (imageChangesListener != null) {
                     imageChangesListener.onImageEdited(imagePath, imageStatus);
+                }
                 return;
             }
         }
@@ -118,8 +121,9 @@ public class DraggableSquareView extends ViewGroup implements DraggableItemView.
             DraggableItemView itemView = getItemViewByStatus(i);
             if (itemView != null && !itemView.isDraggable()) {
                 itemView.fillImageView(imagePath);
-                if (imageChangesListener != null)
+                if (imageChangesListener != null) {
                     imageChangesListener.onImageAdded(imagePath, imageStatus);
+                }
                 break;
             }
         }
@@ -146,18 +150,23 @@ public class DraggableSquareView extends ViewGroup implements DraggableItemView.
             // 被delete的view移动到队尾
             deleteView.switchPosition(lastDraggableViewStatus);
         }
-        if (imageChangesListener != null)
+        if (imageChangesListener != null) {
             imageChangesListener.onImageDeleted(deleteView.getImagePath(), deleteView.getStatus());
+        }
     }
 
     @Override
     public void pickImage(int imageStatus, boolean isModify) {
-        if (listener != null) listener.pickImage(imageStatus, isModify);
+        if (listener != null) {
+            listener.pickImage(imageStatus, isModify);
+        }
     }
 
     @Override
     public void takePhoto(int imageStatus, boolean isModify) {
-        if (listener != null) listener.takePhoto(imageStatus, isModify);
+        if (listener != null) {
+            listener.takePhoto(imageStatus, isModify);
+        }
     }
 
     public void setListener(Listener listener) {
@@ -190,7 +199,9 @@ public class DraggableSquareView extends ViewGroup implements DraggableItemView.
             // 按下的时候，缩放到最小的级别
             draggingView = (DraggableItemView) child;
             // 手指按下的时候，需要把某些view bringToFront，否则的话，tryCapture将不按预期工作
-            if (draggingView.isDraggable()) getParent().requestDisallowInterceptTouchEvent(true);
+            if (draggingView.isDraggable()) {
+                getParent().requestDisallowInterceptTouchEvent(true);
+            }
             return draggingView.isDraggable();
         }
 
@@ -360,11 +371,13 @@ public class DraggableSquareView extends ViewGroup implements DraggableItemView.
         int itemBottom = 0;
         // 每个view的边长是everyLength * 2 + spaceInterval
         sideLength = everyLength * 2 + spaceInterval;
-        int halfSideLength = sideLength / 2; // 边长的一半
+
+        // 边长的一半
+        int halfSideLength = sideLength / 2;
         int rightCenter = r - spaceInterval - everyLength / 2;
         int bottomCenter = b - spaceInterval - everyLength / 2;
-
         float scaleRate = (float) everyLength / sideLength;
+
         int num = getChildCount();
         for (int i = 0; i < num; i++) {
             DraggableItemView itemView = (DraggableItemView) getChildAt(i);
@@ -411,6 +424,7 @@ public class DraggableSquareView extends ViewGroup implements DraggableItemView.
                     itemTop = bottomCenter - halfSideLength;
                     itemBottom = bottomCenter + halfSideLength;
                     break;
+                default:
             }
 
             LayoutParams lp = itemView.getLayoutParams();
